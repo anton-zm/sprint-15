@@ -2,15 +2,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
 const key = require('../jwtconfig');
+const NotFoundError = require('./errors/not-found-err');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   user
     .find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Что-то пошло не так' }));
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body; // eslint-disable-line
   if (!password || password.length < 4) {
     return res.status(400).send({ message: 'Нужно задать пароль. Длина пароля не менее 4 символов.' });
@@ -29,22 +30,25 @@ module.exports.createUser = (req, res) => {
         if (err.name === 'ValidationError') {
           res.status(400).send({ message: err });
         } else {
-          res.status(500).send({ message: err });
+          next(err);
         }
       });
   });
 };
 
-module.exports.getUser = async (req, res) => {
-  try {
-    const userObj = await user.findById(req.params.userId).orFail(new Error('ПОЛЬЗОВАТЕЛЬ НЕ НАЙДЕН'));
-    return res.json({ userObj });
-  } catch (err) {
-    return res.status(404).send({ message: 'Пользователь не найден' });
-  }
+module.exports.getUser = (req, res, next) => {
+  user
+    .findById(req.params.userId)
+    .then((userr) => {
+      if (!userr) {
+        throw new NotFoundError('Нет пользователя с таким id');
+      }
+      res.send(userr);
+    })
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (password) {
     return user
@@ -53,9 +57,7 @@ module.exports.login = (req, res) => {
         const token = jwt.sign({ _id: userObj._id }, key, { expiresIn: '7d' });
         res.send({ token });
       })
-      .catch((err) => {
-        res.status(401).send({ message: err.message });
-      });
+      .catch(next);
   }
   return res.status(400).send({ message: 'Необходимо ввести пароль' });
 };

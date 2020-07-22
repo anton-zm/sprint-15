@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   card
     .find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Что-то пошло не так' }));
+    .catch(next);
 };
-module.exports.createCard = (req, res) => {
+
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   card
     .create({ name, link, owner: req.user._id })
@@ -16,7 +17,7 @@ module.exports.createCard = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: err });
       } else {
-        res.status(500).send({ message: err });
+        next(err);
       }
     });
 };
