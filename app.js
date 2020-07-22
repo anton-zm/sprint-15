@@ -6,6 +6,7 @@ const cardsRoute = require('./routes/cards');
 const usersRoute = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 
@@ -19,6 +20,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+app.use(requestLogger);
 
 app.post(
   '/api/signin',
@@ -59,6 +62,7 @@ app.use('*', (req, res) => {
   });
 });
 
+app.use(errorLogger);
 app.use(errors());
 
 /* eslint-disable*/
