@@ -1,0 +1,40 @@
+{
+  "name": "sprint15",
+  "version": "1.0.0",
+  "description": "Яндекс.Практикум  Самостоятельная работа",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anton-zm/sprint13.git"
+  },
+  "keywords": [],
+  "author": "Anton Zmanovskii",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anton-zm/sprint13/issues"
+  },
+  "homepage": "https://github.com/anton-zm/sprint13#readme",
+  "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.21.1",
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "celebrate": "^12.1.2",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-winston": "^4.0.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.20",
+    "mongoose-unique-validator": "^2.0.3",
+    "validator": "^13.1.1",
+    "winston": "^3.3.3"
+  }
+}
