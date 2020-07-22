@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const card = require('../models/card');
-const NotFoundError = require('./errors/not-found-err');
+const NotFoundError = require('../errors/not-found-err');
 
 module.exports.getCards = (req, res, next) => {
   card

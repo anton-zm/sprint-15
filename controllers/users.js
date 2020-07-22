@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
 const key = require('../jwtconfig');
-const NotFoundError = require('./errors/not-found-err');
+const NotFoundError = require('../errors/not-found-err');
 
 module.exports.getUsers = (req, res, next) => {
   user

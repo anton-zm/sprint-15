@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 const cardsRoute = require('./routes/cards');
 const usersRoute = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
@@ -19,8 +20,33 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.post('/api/signin', login);
-app.post('/api/signup', createUser);
+app.post(
+  '/api/signin',
+  celebrate({
+    body: Joi.object()
+      .keys({
+        email: Joi.string().required().email(),
+        password: Joi.string().required().min(8),
+      })
+      .unknown(true),
+  }),
+  login // eslint-disable-line
+);
+app.post(
+  '/api/signup',
+  celebrate({
+    body: Joi.object()
+      .keys({
+        email: Joi.string().required().email(),
+        password: Joi.string().required().min(8),
+        name: Joi.string().required().min(2).max(30),
+        about: Joi.string().required().min(2).max(30),
+        avatar: Joi.string().required(),
+      })
+      .unknown(true),
+  }),
+  createUser // eslint-disable-line
+);
 
 app.use(auth);
 
@@ -32,6 +58,9 @@ app.use('*', (req, res) => {
     message: 'Запрашиваемый ресурс не найден',
   });
 });
+
+app.use(errors());
+
 /* eslint-disable*/
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
