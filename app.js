@@ -3,20 +3,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
-const validator = require('validator');
+const validateUrl = require('./urlRegex');
 const cardsRoute = require('./routes/cards');
 const usersRoute = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err');
-
-const validUrl = (v) => {
-  if (!validator.isUrl(v)) {
-    return new Error('не ссылка');
-  }
-  return v;
-};
 
 const { PORT = 3000 } = process.env;
 
@@ -57,7 +50,7 @@ app.post(
       password: Joi.string().required().min(8),
       name: Joi.string().required().min(2).max(30),
       about: Joi.string().required().min(2).max(30),
-      avatar: Joi.string().required().custom(validUrl),
+      avatar: Joi.string().required().pattern(validateUrl),
     }),
   }),
   createUser // eslint-disable-line

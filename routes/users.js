@@ -8,11 +8,11 @@ usersRouter.get('/', getUsers);
 
 usersRouter.get(
   '/:userId',
-  // celebrate({
-  //   params: Joi.object().keys({
-  //     userId: Joi.string().length(24).hex(),
-  //   }),
-  // }),
+  celebrate({
+    params: Joi.object().keys({
+      userId: Joi.string().length(24).hex(),
+    }),
+  }),
   getUser // eslint-disable-line
 );
 
