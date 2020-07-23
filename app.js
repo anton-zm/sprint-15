@@ -31,7 +31,7 @@ app.get('/crash-test', () => {
 });
 
 app.post(
-  '/api/signin',
+  '/signin',
   celebrate({
     body: Joi.object()
       .keys({
@@ -43,7 +43,7 @@ app.post(
   login // eslint-disable-line
 );
 app.post(
-  '/api/signup',
+  '/signup',
   celebrate({
     body: Joi.object()
       .keys({
@@ -60,8 +60,8 @@ app.post(
 
 app.use(auth);
 
-app.use('/api/cards', cardsRoute);
-app.use('/api/users', usersRoute);
+app.use('/cards', cardsRoute);
+app.use('/users', usersRoute);
 
 app.use('*', (req, res) => {
   res.status(404).send({
