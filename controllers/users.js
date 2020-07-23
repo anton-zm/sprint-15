@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
+const BadRequest = require('../errors/bad-req-err');
 
 const { JWT_SECRET, NODE_ENV } = process.env;
 const NotFoundError = require('../errors/not-found-err');
@@ -15,35 +16,36 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body; // eslint-disable-line
   if (!password || password.length < 8) {
-    return res.status(400).send({ message: 'Нужно задать пароль. Длина пароля не менее 8 символов.' });
+    throw new BadRequest('Нужно задать пароль. Длина пароля не менее 8 символов.');
   }
-  return bcrypt.hash(password, 10).then((hash) => {
-    user
-      .create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      })
-      .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err });
-        } else {
-          next(err);
-        }
-      });
-  });
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      user
+        .create({
+          name,
+          about,
+          avatar,
+          email,
+          password: hash,
+        })
+        .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            throw new BadRequest('Что-то пошло не так...');
+          } else {
+            next(err);
+          }
+        });
+    })
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
   user
     .findById(req.params.userId)
+    .orFail(new NotFoundError('Нет пользователя с таким id'))
     .then((userr) => {
-      if (!userr) {
-        throw new NotFoundError('Нет пользователя с таким id');
-      }
       res.send(userr);
     })
     .catch(next);

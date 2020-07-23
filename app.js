@@ -8,6 +8,7 @@ const usersRoute = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 
@@ -54,15 +55,11 @@ app.post(
   createUser // eslint-disable-line
 );
 
-app.use(auth);
+app.use('/cards', auth, cardsRoute);
+app.use('/users', auth, usersRoute);
 
-app.use('/cards', cardsRoute);
-app.use('/users', usersRoute);
-
-app.use('*', (req, res) => {
-  res.status(404).send({
-    message: 'Запрашиваемый ресурс не найден',
-  });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
 app.use(errorLogger);
