@@ -13,6 +13,14 @@ cardsRouter.post(
   }),
   createCard // eslint-disable-line
 );
-cardsRouter.delete('/:cardId', deleteCard);
+cardsRouter.delete(
+  '/:cardId',
+  celebrate({
+    params: Joi.object().keys({
+      cardId: Joi.string().length(24).hex(),
+    }),
+  }),
+  deleteCard // eslint-disable-line
+);
 
 module.exports = cardsRouter;
