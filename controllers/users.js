@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const user = require('../models/user');
 const BadRequest = require('../errors/bad-req-err');
 
@@ -32,9 +33,7 @@ module.exports.createUser = (req, res, next) => {
         .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            throw new BadRequest('Что-то пошло не так...');
-          } else {
-            next(err);
+            next(new BadRequest('Что-то пошло не так...'));
           }
         });
     })
@@ -42,6 +41,9 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+    throw new BadRequest('Некорректный ID');
+  }
   user
     .findById(req.params.userId)
     .orFail(new NotFoundError('Нет пользователя с таким id'))
