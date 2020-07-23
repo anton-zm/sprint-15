@@ -33,7 +33,7 @@ module.exports.createUser = (req, res, next) => {
         .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            next(new BadRequest('Что-то пошло не так...'));
+            next(new BadRequest('Пользователь с таким E-mail уже есть'));
           }
         });
     })
