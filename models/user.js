@@ -42,22 +42,19 @@ const usersSchema = new mongoose.Schema({
 });
 
 usersSchema.statics.findUserByCredentials = function (email, password) {
-  return (
-    this.findOne({ email })
-      // .orFail(new AuthError('Нет пользователя с таким Email'))
-      .select('+password')
-      .then((user) => {
-        if (!user) {
-          return Promise.reject(new AuthError('Нет пользователя с таким Email'));
+  return this.findOne({ email })
+    .select('+password')
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new AuthError('Нет пользователя с таким Email'));
+      }
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return Promise.reject(new AuthError('Неправильный пароль'));
         }
-        return bcrypt.compare(password, user.password).then((matched) => {
-          if (!matched) {
-            return Promise.reject(new AuthError('Неправильный пароль'));
-          }
-          return user;
-        });
-      })
-  );
+        return user;
+      });
+    });
 };
 
 usersSchema.plugin(uniqueValidator, { message: 'Пользователь с таким E-Mail уже есть.' });

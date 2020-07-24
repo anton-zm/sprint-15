@@ -6,6 +6,7 @@ const BadRequest = require('../errors/bad-req-err');
 
 const { JWT_SECRET, NODE_ENV } = process.env;
 const NotFoundError = require('../errors/not-found-err');
+const UniqueUserError = require('../errors/unique-user-err');
 
 module.exports.getUsers = (req, res, next) => {
   user
@@ -33,9 +34,12 @@ module.exports.createUser = (req, res, next) => {
         .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            next(new BadRequest('Пользователь с таким E-mail уже есть'));
+            if (err.errors.email && err.errors.email.kind === 'unique') {
+              throw new UniqueUserError('Пользователь с таким E-mail уже есть');
+            }
           }
-        });
+        })
+        .catch(next);
     })
     .catch(next);
 };
