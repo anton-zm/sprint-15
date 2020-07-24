@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const AuthError = require('../errors/auth-err');
 
 const usersSchema = new mongoose.Schema({
   name: {
@@ -42,6 +43,7 @@ const usersSchema = new mongoose.Schema({
 
 usersSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
+    .orFail(new AuthError('Нет пользователя с таким Email'))
     .select('+password')
     .then((user) => {
       if (!user) {
