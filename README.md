@@ -34,14 +34,16 @@
 
 ## Backend-часть проекта
 
-</signup> - регистрация нового пользователя (POST)
+<http://api.mesto-project.ga/signup> - регистрация нового пользователя (POST)
 
-</signin> - авторизация (POST)
+<http://api.mesto-project.ga/signin> - авторизация (POST)
 
-</cards> - получить все карточки (GET)
+<http://api.mesto-project.ga/cards> - получить все карточки (GET)
 
-</users> - получить всех пользователей (GET)
+<http://api.mesto-project.ga/users> - получить всех пользователей (GET)
 
-</users/:user_id> - получить пользователя (GET)
+<http://api.mesto-project.ga/users/:user_id> - получить пользователя (GET)
 
-</cards/:cardId> - удалить карточку (DELETE)
+<http://api.mesto-project.ga/cards/:cardId> - удалить карточку (DELETE)
+
+<http://api.mesto-project.ga/crash-test> - тест восстановления работы сервера (GET)

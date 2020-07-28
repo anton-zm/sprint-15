@@ -9,7 +9,10 @@ cardsRouter.post(
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
-      link: Joi.string().required().pattern(validateUrl),
+      link: Joi.string()
+        .required()
+        .pattern(validateUrl)
+        .error(() => new Error('Это не похоже на ссылку')),
     }),
   }),
   createCard // eslint-disable-line
