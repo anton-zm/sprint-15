@@ -36,6 +36,8 @@ module.exports.createUser = (req, res, next) => {
           if (err.name === 'ValidationError') {
             if (err.errors.email && err.errors.email.kind === 'unique') {
               throw new UniqueUserError('Пользователь с таким E-mail уже есть');
+            } else {
+              throw new BadRequest('Ошибка валидации');
             }
           }
         })
