@@ -3,13 +3,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+const validateUrl = require('./urlRegex');
 const cardsRoute = require('./routes/cards');
 const usersRoute = require('./routes/users');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const NotFoundError = require('./errors/not-found-err');
 
-const { PORT } = process.env;
+const { PORT = 3000 } = process.env;
 
 const app = express();
 
@@ -31,42 +33,37 @@ app.get('/crash-test', () => {
 });
 
 app.post(
-  '/api/signin',
+  '/signin',
   celebrate({
-    body: Joi.object()
-      .keys({
-        email: Joi.string().required().email(),
-        password: Joi.string().required().min(8),
-      })
-      .unknown(true),
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }),
   }),
   login // eslint-disable-line
 );
 app.post(
-  '/api/signup',
+  '/signup',
   celebrate({
-    body: Joi.object()
-      .keys({
-        email: Joi.string().required().email(),
-        password: Joi.string().required().min(8),
-        name: Joi.string().required().min(2).max(30),
-        about: Joi.string().required().min(2).max(30),
-        avatar: Joi.string().required(),
-      })
-      .unknown(true),
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+      name: Joi.string().required().min(2).max(30),
+      about: Joi.string().required().min(2).max(30),
+      avatar: Joi.string()
+        .required()
+        .pattern(validateUrl)
+        .error(() => new Error('Это не похоже на ссылку')),
+    }),
   }),
   createUser // eslint-disable-line
 );
 
-app.use(auth);
+app.use('/cards', auth, cardsRoute);
+app.use('/users', auth, usersRoute);
 
-app.use('/api/cards', cardsRoute);
-app.use('/api/users', usersRoute);
-
-app.use('*', (req, res) => {
-  res.status(404).send({
-    message: 'Запрашиваемый ресурс не найден',
-  });
+app.use((req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
 app.use(errorLogger);

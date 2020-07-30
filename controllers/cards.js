@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
+const BadRequest = require('../errors/bad-req-err');
+const RightsError = require('../errors/right-err');
 
 module.exports.getCards = (req, res, next) => {
   card
@@ -16,28 +18,29 @@ module.exports.createCard = (req, res, next) => {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err });
+        throw new BadRequest('Что-то пошло не так...');
       } else {
         next(err);
       }
-    });
+    })
+    .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
-    return res.status(400).send({ message: 'Некорректный ID' });
+    throw new BadRequest('Некорректный ID');
   }
   return card
     .findById(req.params.cardId)
-    .then((thisCard) => {
-      if (!thisCard) {
-        throw new NotFoundError('У Вас нет такой карточки');
+    .orFail(new NotFoundError('Карточка не найдена'))
+    .then((Card) => {
+      if (!(Card.owner.toString() === req.user._id)) {
+        throw new RightsError('Вы не можете удалять чужие карточки');
       }
-      if (!(thisCard.owner.toString() === req.user._id)) {
-        return res.status(403).send({ message: 'Сожалеем, но удалять можно только свои карточки.' });
-      }
-      res.send({ data: thisCard, message: 'Карточка удалена' });
-      return card.findByIdAndDelete(card._id);
+      return card
+        .findByIdAndDelete(Card._id)
+        .then((delCard) => res.send({ data: delCard, message: 'Карточка  удалена' }))
+        .catch(next);
     })
     .catch(next);
 };

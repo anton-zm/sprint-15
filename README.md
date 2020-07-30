@@ -8,7 +8,7 @@
 
 <https://mesto-project.ga>
 
-[84.201.165.122](84.201.165.122)
+[84.201.164.210](http://84.201.164.210)
 
 ## Описание
 
@@ -31,3 +31,19 @@
 в режиме разработки (когда process.env.NODE_ENV !== 'production') код запускается и работает без наличия .env файла;
 
 сервер самостоятельно восстанавливается после GET-запроса на URL /crash-test.
+
+## Backend-часть проекта
+
+<http://api.mesto-project.ga/signup> - регистрация нового пользователя (POST)
+
+<http://api.mesto-project.ga/signin> - авторизация (POST)
+
+<http://api.mesto-project.ga/cards> - получить все карточки (GET)
+
+<http://api.mesto-project.ga/users> - получить всех пользователей (GET)
+
+<http://api.mesto-project.ga/users/:user_id> - получить пользователя (GET)
+
+<http://api.mesto-project.ga/cards/:cardId> - удалить карточку (DELETE)
+
+<http://api.mesto-project.ga/crash-test> - тест восстановления работы сервера (GET)

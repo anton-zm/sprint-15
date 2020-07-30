@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const user = require('../models/user');
-const key = require('../jwtconfig');
+const BadRequest = require('../errors/bad-req-err');
 
 const { JWT_SECRET, NODE_ENV } = process.env;
 const NotFoundError = require('../errors/not-found-err');
+const UniqueUserError = require('../errors/unique-user-err');
 
 module.exports.getUsers = (req, res, next) => {
   user
@@ -16,35 +18,42 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body; // eslint-disable-line
   if (!password || password.length < 8) {
-    return res.status(400).send({ message: 'Нужно задать пароль. Длина пароля не менее 8 символов.' });
+    throw new BadRequest('Нужно задать пароль. Длина пароля не менее 8 символов.');
   }
-  return bcrypt.hash(password, 10).then((hash) => {
-    user
-      .create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      })
-      .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err });
-        } else {
-          next(err);
-        }
-      });
-  });
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      user
+        .create({
+          name,
+          about,
+          avatar,
+          email,
+          password: hash,
+        })
+        .then((users) => res.send({ data: { name: users.name, about: users.about, avatar: users.avatar, email: users.email } })) // eslint-disable-line
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            if (err.errors.email && err.errors.email.kind === 'unique') {
+              throw new UniqueUserError('Пользователь с таким E-mail уже есть');
+            } else {
+              throw new BadRequest('Ошибка валидации');
+            }
+          }
+        })
+        .catch(next);
+    })
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+    throw new BadRequest('Некорректный ID');
+  }
   user
     .findById(req.params.userId)
+    .orFail(new NotFoundError('Нет пользователя с таким id'))
     .then((userr) => {
-      if (!userr) {
-        throw new NotFoundError('Нет пользователя с таким id');
-      }
       res.send(userr);
     })
     .catch(next);
